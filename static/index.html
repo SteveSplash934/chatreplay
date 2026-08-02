@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat Replay</title>
+
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <!-- UI Libraries -->
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.default.css" rel="stylesheet">
+    <link href="https://unpkg.com/tippy.js@6/animations/scale.css" rel="stylesheet">
+    <link href="https://unpkg.com/nprogress@0.2.0/nprogress.css" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-[#0b141a] text-[#e9edef] font-sans h-screen flex overflow-hidden">
+
+    <!-- Upload Screen -->
+    <div id="upload-screen"
+        class="flex-1 flex flex-col items-center justify-center p-4 md:p-6 h-screen w-full absolute inset-0 z-50 bg-[#0b141a]">
+        <div class="bg-[#202c33] rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full text-center border border-[#2a3942]">
+            <div class="flex justify-center mb-4 text-[#00a884]">
+                <i data-lucide="message-square-text" class="w-12 h-12 md:w-16 md:h-16"></i>
+            </div>
+            <h1 class="text-xl md:text-2xl font-bold mb-2 text-[#e9edef]">Chat Replay</h1>
+            <p class="text-[#8696a0] mb-6 text-xs md:text-sm">Export your WhatsApp chat (Without Media), and drop the
+                <b>_chat.txt</b> file below.
+            </p>
+
+            <input type="file" class="filepond" name="filepond" accept="text/plain" />
+        </div>
+    </div>
+
+    <!-- Main Application (Hidden initially) -->
+    <div id="main-app" class="hidden flex-1 h-screen w-full flex-row relative overflow-hidden">
+
+        <!-- LHS Control Panel Sidebar -->
+        <aside id="sidebar"
+            class="fixed inset-0 z-50 w-full h-full bg-[#111b21] flex flex-col border-r border-[#222d34] shadow-2xl transition-transform duration-300 transform -translate-x-full md:translate-x-0 md:static md:w-80 md:z-20 md:flex shrink-0">
+            <header class="bg-[#202c33] px-4 py-3.5 border-b border-[#222d34] flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-[#6b7c85] rounded-full flex items-center justify-center text-[#d1d7db]">
+                        <i data-lucide="settings-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-[#e9edef] text-sm md:text-base">Settings</h2>
+                        <p class="text-[11px] md:text-xs text-[#8696a0]">Configure playback</p>
+                    </div>
+                </div>
+                <button id="btn-close-sidebar"
+                    class="md:hidden p-1.5 rounded-full text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef] transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </header>
+
+            <div class="p-4 flex-1 overflow-y-auto space-y-5">
+                <!-- User Selection Block (Me) -->
+                <div>
+                    <label class="block text-xs md:text-sm font-medium text-[#00a884] mb-1.5">Select Your
+                        Aliases</label>
+                    <p class="text-[11px] md:text-xs text-[#8696a0] mb-2.5">Select all names that belong to YOU
+                        (Right-aligned).</p>
+                    <select id="user-select" multiple placeholder="Select names..."></select>
+                </div>
+
+                <hr class="border-[#222d34]">
+
+                <!-- Group & Merge Other Participants Block -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs md:text-sm font-medium text-[#00a884]">Group & Merge Others</label>
+                        <button type="button" id="btn-add-group"
+                            class="text-xs bg-[#2a3942] hover:bg-[#374955] text-[#00a884] font-semibold py-1 px-2.5 rounded transition flex items-center gap-1 border border-[#374955]">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Person
+                        </button>
+                    </div>
+                    <p class="text-[11px] md:text-xs text-[#8696a0] mb-2.5">Combine multiple usernames into a single
+                        person.</p>
+                    <div id="contact-groups-list" class="max-h-48 overflow-y-auto pr-1 space-y-3"></div>
+                </div>
+
+                <hr class="border-[#222d34]">
+
+                <!-- Timestamp Options Block -->
+                <div>
+                    <label class="block text-xs md:text-sm font-medium text-[#00a884] mb-2">Timestamp Options</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-2 text-xs md:text-sm text-[#e9edef] cursor-pointer">
+                            <input type="checkbox" id="opt-show-seconds" class="w-4 h-4 accent-[#00a884]"> Show Seconds
+                        </label>
+                        <label class="flex items-center gap-2 text-xs md:text-sm text-[#e9edef] cursor-pointer">
+                            <input type="checkbox" id="opt-show-date" class="w-4 h-4 accent-[#00a884]"> Show Date in
+                            Bubbles
+                        </label>
+                    </div>
+                </div>
+
+                <hr class="border-[#222d34]">
+
+                <!-- File Info Block -->
+                <div>
+                    <label class="block text-xs md:text-sm font-medium text-[#8696a0] mb-1">File Stats</label>
+                    <div class="text-xs text-[#667781] space-y-1">
+                        <p>Total Messages: <span id="stat-total" class="text-[#e9edef]">0</span></p>
+                        <p>Participants: <span id="stat-participants" class="text-[#e9edef]">0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer Actions -->
+            <div class="p-4 bg-[#202c33] border-t border-[#222d34] space-y-2.5">
+                <button id="btn-apply"
+                    class="w-full bg-[#00a884] hover:bg-[#008f6f] text-gray-900 font-semibold py-2.5 px-4 rounded transition duration-200 text-sm">
+                    Apply & Reload Chat
+                </button>
+                <button id="btn-logout"
+                    class="w-full bg-transparent border border-[#ef4444] hover:bg-[#ef4444]/10 text-[#ef4444] py-2.5 px-4 rounded transition duration-200 flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Clear Data & Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- RHS Main Chat Area -->
+        <main class="flex-1 flex flex-col relative bg-[#0b141a] min-w-0 h-full">
+            <!-- Header -->
+            <header
+                class="bg-[#202c33] px-3 py-2.5 md:px-4 md:py-3 flex items-center justify-between z-10 shadow-sm border-b border-[#222d34] gap-2 relative">
+
+                <!-- 1. Clean Header View -->
+                <div id="header-clean-view" class="flex items-center justify-between w-full">
+                    <div class="flex items-center gap-2 md:gap-3 shrink-0">
+                        <button id="btn-open-sidebar"
+                            class="md:hidden p-1.5 rounded-lg text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef] transition">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                        <div
+                            class="w-9 h-9 md:w-10 md:h-10 bg-[#6b7c85] rounded-full flex items-center justify-center text-[#d1d7db] shrink-0">
+                            <i data-lucide="users" class="w-5 h-5 md:w-6 md:h-6"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h2 class="font-semibold text-[#e9edef] text-xs sm:text-sm md:text-base truncate">Chat
+                                Replay</h2>
+                            <p class="text-[10px] md:text-xs text-[#8696a0] truncate">End-to-end simulated</p>
+                        </div>
+                    </div>
+
+                    <button id="btn-search-open"
+                        class="hidden p-2 rounded-lg text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef] transition ml-auto"
+                        title="Open Search">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- 2. Search Arena View -->
+                <div id="search-arena-view"
+                    class="hidden absolute inset-0 bg-[#202c33] px-3 py-2 md:px-4 flex items-center gap-1.5 md:gap-2 z-20 w-full h-full border-b border-[#222d34]">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 md:pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-3.5 h-3.5 md:w-4 md:h-4 text-[#8696a0]"></i>
+                        </div>
+                        <input type="text" id="search-input"
+                            class="bg-[#2a3942] text-[#e9edef] text-xs md:text-sm rounded-lg focus:ring-1 focus:ring-[#00a884] focus:outline-none block w-full pl-8 pr-8 md:pl-10 md:pr-9 p-1.5 md:p-2 border border-transparent placeholder-[#8696a0]"
+                            placeholder="Search messages...">
+
+                        <button id="btn-search-clear-input"
+                            class="hidden absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#8696a0] hover:text-[#e9edef] transition"
+                            title="Clear input">
+                            <i data-lucide="x" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                        </button>
+                    </div>
+
+                    <div class="relative shrink-0">
+                        <button id="btn-search-opts"
+                            class="p-1.5 md:p-2 bg-[#2a3942] rounded-lg text-[#8696a0] hover:text-[#e9edef] transition"
+                            title="Search options">
+                            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                        </button>
+                        <div id="search-opts-menu"
+                            class="hidden absolute top-full mt-2 right-0 bg-[#202c33] border border-[#2a3942] rounded-lg shadow-xl p-3 md:p-4 w-44 md:w-48 z-50">
+                            <label
+                                class="flex items-center gap-2 text-xs md:text-sm text-[#e9edef] mb-2 md:mb-3 cursor-pointer">
+                                <input type="checkbox" id="opt-case" class="w-3.5 h-3.5 md:w-4 md:h-4 accent-[#00a884]">
+                                Match Case
+                            </label>
+                            <label class="flex items-center gap-2 text-xs md:text-sm text-[#e9edef] cursor-pointer">
+                                <input type="checkbox" id="opt-word" class="w-3.5 h-3.5 md:w-4 md:h-4 accent-[#00a884]">
+                                Whole Word
+                            </label>
+                        </div>
+                    </div>
+
+                    <button id="btn-search-close-arena"
+                        class="p-1.5 md:p-2 rounded-lg text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef] transition shrink-0 ml-1"
+                        title="Close Search">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Messages Container -->
+            <div id="chat-container"
+                class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-8 chat-bg space-y-3 relative flex flex-col">
+                <div id="chat-prompt"
+                    class="flex items-center justify-center h-full flex-col text-center opacity-70 p-4">
+                    <i data-lucide="arrow-left-square" class="w-10 h-10 md:w-12 md:h-12 text-[#8696a0] mb-3"></i>
+                    <p class="text-xs md:text-sm text-[#8696a0]">Open Settings menu to select your aliases<br>and click
+                        Apply to start.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- RHS Slide-Out Search Results Panel -->
+        <aside id="rhs-search-panel"
+            class="fixed inset-y-0 right-0 z-40 w-full md:w-80 lg:w-96 bg-[#111b21] border-l border-[#222d34] flex flex-col shadow-2xl transition-transform duration-300 transform translate-x-full md:relative md:translate-x-0 hidden shrink-0">
+            <header class="bg-[#202c33] px-4 py-3.5 border-b border-[#222d34] flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="search" class="w-4 h-4 text-[#00a884]"></i>
+                    <h3 class="font-semibold text-xs md:text-sm text-[#e9edef]">Search Results</h3>
+                    <span id="rhs-search-count"
+                        class="text-[10px] md:text-xs text-[#00a884] bg-[#005c4b]/30 px-2 py-0.5 rounded font-medium">0
+                        matches</span>
+                </div>
+                <button id="btn-close-rhs-search"
+                    class="p-1.5 rounded-full text-[#8696a0] hover:bg-[#2a3942] hover:text-[#e9edef] transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </header>
+
+            <div id="rhs-search-results" class="p-3 flex-1 overflow-y-auto space-y-2.5">
+                <!-- Injected search result items -->
+            </div>
+        </aside>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+    <script src="https://unpkg.com/dayjs@1.8.21/plugin/customParseFormat.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

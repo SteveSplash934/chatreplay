@@ -1,0 +1,89 @@
+/* Custom WhatsApp dark mode background doodle */
+.chat-bg {
+  background-color: #0b141a;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h22v-2H22v-2h22v-2H22v-2h22V8h-22V6h22V4h-22V2h22V0h2v40h-2V22H22v2h22v2H22v2h22v2H22v2h22v2H22v2h22v2H22v2h22v2h-22v-2H0v-2h20v-2H0v-2h20v-2H0v-2h20v-2H0v-2h20v-2H0v-2h20v-2z' fill='%23111b21' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-attachment: local;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+}
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Filepond Aesthetics */
+.filepond--panel-root {
+  background-color: #111b21 !important;
+  border: 2px dashed #374045;
+}
+.filepond--drop-label {
+  color: #8696a0 !important;
+}
+
+/* NProgress Top Bar */
+#nprogress .bar {
+  background: #00a884 !important;
+  height: 3px !important;
+}
+#nprogress .peg {
+  box-shadow:
+    0 0 10px #00a884,
+    0 0 5px #00a884 !important;
+}
+
+/* Text Wrapping */
+.msg-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Tom Select Dark Mode Overrides */
+.ts-control,
+.ts-wrapper.multi.has-items .ts-control {
+  background-color: #2a3942 !important;
+  border: 1px solid #202c33 !important;
+  color: #e9edef !important;
+  border-radius: 6px !important;
+  padding: 6px 8px !important;
+}
+.ts-dropdown,
+.ts-dropdown .option {
+  background-color: #2a3942 !important;
+  color: #e9edef !important;
+  border: none !important;
+}
+.ts-dropdown .option.active,
+.ts-dropdown .option:hover {
+  background-color: #202c33 !important;
+}
+.ts-wrapper.multi .ts-control > div {
+  background-color: #005c4b !important;
+  color: #e9edef !important;
+  border: none !important;
+  border-radius: 4px !important;
+}
+.ts-control input {
+  color: #e9edef !important;
+}
+
+/* Ellipsis truncation for RHS search list */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
