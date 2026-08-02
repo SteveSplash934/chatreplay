@@ -1,6 +1,6 @@
 import re
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.concurrency import run_in_threadpool
 import uvicorn
@@ -83,6 +83,10 @@ def parse_chat_content(content: str) -> dict:
         "participants": list(participants),
         "messages": messages
     }
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/static/index.html")
 
 @app.post("/api/upload")
 async def upload_chat(filepond: UploadFile = File(...)):
